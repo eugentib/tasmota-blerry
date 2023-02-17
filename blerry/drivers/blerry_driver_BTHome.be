@@ -132,38 +132,43 @@ def blerry_handle(device, advert)
       var protec = 0
       while i < size(data)
         var mt = data[i]
-        var dp_len = 1
-        if Meas_Types[mt].contains('d_l')
-          dp_len = Meas_Types[mt]['d_l']
-        end
-        var dp_dtype = Meas_Types[mt]['d']
-        var d_fact = 1
-        if Meas_Types[mt].contains('f')
-          d_fact = Meas_Types[mt]['f']
-        end
-        var d_unit = ''
-        if Meas_Types[mt].contains('u')
-          d_unit = Meas_Types[mt]['u']
-        end
-        var dp_rval = data[i+1..i+1+dp_len]
-        
-        if dp_len > 0
-          dp_val = dp_rval.get(0, dp_len)
-        else
-          dp_len = -dp_len
-          dp_val = dp_rval.geti(0, dp_len)
-        end
+        if Meas_Types.contains(mt)
+            var dp_len = 1
+          if Meas_Types[mt].contains('d_l')
+            dp_len = Meas_Types[mt]['d_l']
+          end
+          var dp_dtype = Meas_Types[mt]['d']
+          var d_fact = 1
+          if Meas_Types[mt].contains('f')
+            d_fact = Meas_Types[mt]['f']
+          end
+          var d_unit = ''
+          if Meas_Types[mt].contains('u')
+            d_unit = Meas_Types[mt]['u']
+          end
+          var dp_rval = data[i+1..i+1+dp_len]
+          
+          if dp_len > 0
+            dp_val = dp_rval.get(0, dp_len)
+          else
+            dp_len = -dp_len
+            dp_val = dp_rval.geti(0, dp_len)
+          end
 
-        if dp_dtype[0..1]=='B_'
-          device.add_binary_sensor(dp_dtype[2..], dp_val,  'battery')
-        elif mt == 0x00
-          device.add_attribute(dp_dtype, dp_val)
-        else
-          print(dp_dtype, d_fact, dp_val, d_unit)
-          device.add_sensor(dp_dtype, d_fact*dp_val,  dp_dtype, d_unit)
-        end
+          if dp_dtype[0..1]=='B_'
+            device.add_binary_sensor(dp_dtype[2..], dp_val,  'battery')
+          elif mt == 0x00
+            device.add_attribute(dp_dtype, dp_val)
+          else
+            print(dp_dtype, d_fact, dp_val, d_unit)
+            device.add_sensor(dp_dtype, d_fact*dp_val,  dp_dtype, d_unit)
+          end
 
-        i = i + dp_len + 1
+          i = i + dp_len + 1
+        else
+          print('Unsuported measurement: ' + str(mt))
+          return false
+        end
       end
     end
   end
